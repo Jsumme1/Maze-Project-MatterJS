@@ -3,7 +3,7 @@ const { Engine, Render, Runner, World, Bodies} = Matter;
 const width = 600;
 const height= 600;
 // number of cells along vertical or horizontal edge
-const cells = 5;
+const cells = 3;
 
 
 const engine = Engine.create();
@@ -49,6 +49,24 @@ World.add(world, walls);
 
 // Preferred grid generation method
 
+// Maze Generation - actual
+
+// shuffle function to randomize array value picking for neighbors below
+const shuffle = (arr) => {
+    let counter = arr.length;
+
+    while(counter > 0) {
+    const index = Math.floor(Math.random()*counter);
+    
+    counter --;
+
+    const temp = arr[counter];
+    arr[counter] = arr[index];
+    arr[index] = temp;
+    }
+
+    return arr
+};
 
 
 const grid = Array (cells)
@@ -65,6 +83,70 @@ const horizontals = Array(cells-1)
 .fill(null)
 .map(() => Array(cells).fill(false));
 
-console.log(grid);
-console.log(verticals);
-console.log(horizontals);
+// random starting coordinates
+
+const startRow = Math.floor(Math.random() * cells);
+const startColumn = Math.floor(Math.random() * cells);
+
+
+// drawing grid
+
+const stepThroughCell = (row, column) => {
+    // if I have visited the cell at [row, column] then return
+    if(grid[row] [column]) {
+        return;
+    }
+
+    // mark this cell as been visited - update element to true
+
+    grid[row] [column] = true;
+
+    // assemble randomly-ordered list of neighbors
+    const neighbors = shuffle([
+        [row-1, column, "up"],
+        [row, column+1, "right"],
+        [row +1, column, "down"],
+        [row, column -1, "left"]
+    ]);
+   
+    // For each neighbor...
+    for (let neighbor of neighbors) {
+        const [nextRow, nextColumn, direction] = neighbor;
+   // see if that neighbor is out of bounds
+  if(nextRow <0 || nextRow >= cells || nextColumn <0 || nextColumn >= cells){
+    continue;
+
+  }
+
+    // if we have visited that neighbor, continue to next neighbor
+
+    if (grid[nextRow][nextColumn]){
+        continue;
+    }
+
+    //  remove a wall from either verticals or horizontals array
+    if(direction === "left"){
+        verticals[row] [column-1] = true;
+    } else if (direction === "right"){
+        verticals[row] [column]= true;
+    } else if (direction === "up") {
+          horizontals[row-1][column] = true;
+    } else if (direction === "down") {
+          horizontals[row][column] = true;
+    }
+ //  Visit that next cell ( previous 2 checks passed) 
+    stepThroughCell(nextRow,nextColumn);
+  }   
+};
+
+stepThroughCell(startRow, startColumn);
+
+horizontals.forEach(row => {
+    row.forEach((open) =>{
+    if (open){
+        return;
+    }
+
+    const wall = Bodies.rectangle();
+});
+});
